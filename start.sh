@@ -1,13 +1,4 @@
 #!/bin/bash
-: ${UR_HOST:?"Please set the UR_HOST environment variable!"}
-: ${UR_PORT:?"Please set the UR_PORT environment variable!"}
-: ${UAA_HOST:?"Please set the UAA_HOST environment variable!"}
-: ${UAA_PORT:?"Please set the UR_PORT environment variable!"}
-: ${UR_SMTP_SENDER_HOST:?"Please set the UR_SMTP_SENDER_HOST environment variable!"}
-: ${UR_SMTP_SENDER_PORT:?"Please set the UR_SMTP_SENDER_PORT environment variable!"}
-: ${UR_SMTP_SENDER_USERNAME:?"Please set the UR_SMTP_SENDER_USERNAME environment variable!"}
-: ${UR_SMTP_SENDER_PASSWORD:?"Please set the UR_SMTP_SENDER_PASSWORD environment variable!"}
-: ${UR_SMTP_SENDER_FROM:?"Please set the UR_SMTP_SENDER_FROM environment variable!"}
-: ${CB_ADDRESS:?"Please set the CB_ADDRESS environment variable!"}
+: ${SULTANS_ZIP:=master}
 
-npm install && node main
+cd /sultans && curl -LO $SULTANS_ZIP && unzip /sultans/$SULTANS_ZIP && cd /sultans/sultans-$SULTAN_ZIP && npm install && node server.js
