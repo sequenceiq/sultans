@@ -1,4 +1,4 @@
 #!/bin/bash
-: ${SULTANS_ZIP:=master}
+: ${SL_ZIP:=master}
 
-cd /sultans && curl -LO $SULTANS_ZIP && unzip /sultans/$SULTANS_ZIP && cd /sultans/sultans-$SULTAN_ZIP && npm install && node server.js
+cd /sultans && curl -LO $SL_ZIP && unzip /sultans/$SL_ZIP && cd /sultans/sultans-$SL_ZIP && npm install && node server.js
