@@ -21,6 +21,7 @@ var clientId = process.env.SL_CLIENT_ID;
 var clientSecret = process.env.SL_CLIENT_SECRET;
 
 console.log("UAA server location: %s", uaaAddress)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 app.engine('html', cons.underscore);
 
