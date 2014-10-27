@@ -7,4 +7,7 @@ RUN apt-get install -y curl unzip
 EXPOSE 3001
 ADD start.sh /sultans/
 
+ADD ngrok.zip /ngrok.zip
+RUN unzip /ngrok -d /bin
+
 CMD ["/sultans/start.sh"]
