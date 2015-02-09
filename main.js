@@ -535,8 +535,21 @@ app.get('/account/details', function(req, res){
                         companyName = splittedGroup[3]
                     }
                 }
-                getUserById(req, res, token, adminUserId, function(adminUserData){
-                    res.json({useName: userData.userName, givenName: userData.givenName, familyName: userData.familyName, company: companyName, companyOwner: adminUserData.userName})
+                var usrOptions = {
+                     headers: {
+                       'Accept' : 'application/json',
+                       'Authorization' : 'Bearer ' + token,
+                       'Content-Type' : 'application/json'
+                     }
+                }
+                needle.get(uaaAddress + '/Users/' + adminUserId, usrOptions, function(err, userResp) {
+                    var adminName = null
+                    if (userResp.statusCode == 200) {
+                       adminName = userResp.body.userName
+                    } else {
+                       adminName = userName // for default user
+                    }
+                    res.json({userName: userData.userName, givenName: userData.givenName, familyName: userData.familyName, company: companyName, companyOwner: adminName})
                 });
             });
         });
