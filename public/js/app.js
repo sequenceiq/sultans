@@ -3,28 +3,6 @@ var $jq = jQuery.noConflict();
 
 var regApp = angular.module('regApp', ['ngRoute']);
 
-regApp.controller("regController", ['$scope', '$http',
-    function ($scope, $http) {
-        $scope.signUp = function() {
-            $http({method: 'POST',dataType: 'json',url:  "/register",
-                   data: {email: email.value, firstName: firstName.value, lastName: lastName.value, password: password.value,
-                          company: company.value}
-                  }).success(function(responseData){
-                    if (responseData.message == 'SUCCESS'){
-                        $scope.email = email.value;
-                        $jq('.carousel').carousel(1);
-                    } else {
-                        $scope.message = responseData.message
-                        $jq("#msgDialog").modal('show');
-                    }
-                  }).error(function (data, status, headers, config){
-                        $scope.message = data.message
-                        $jq("#msgDialog").modal('show');
-                  });
-        }
-    }
-]);
-
 regApp.controller("resetController", ['$scope', '$http',
     function ($scope, $http, $location) {
         $scope.resetPassword = function() {

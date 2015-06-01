@@ -77,18 +77,6 @@ var confirmPasswordErrorMsg = 'passwords do not match!'
 var firstNameErrorMsg = 'first name is empty'
 var lastNameErrorMsg = 'last name is empty'
 var companyErrorMsg = 'company name is empty'
-// register.html
-app.get('/register', function(req, res) {
-  res.render('register',
-  {
-   emailErrorMsg: emailErrorMsg,
-   passwordErrorMsg: passwordErrorMsg,
-   confirmPasswordErrorMsg: confirmPasswordErrorMsg,
-   firstNameErrorMsg: firstNameErrorMsg,
-   lastNameErrorMsg: lastNameErrorMsg,
-   companyErrorMsg: companyErrorMsg
-   })
-});
 
 // reset.html
 app.get('/reset/:resetToken', function(req, res) {
@@ -379,19 +367,6 @@ app.post('/reset/:resetToken', function(req, res) {
     res.statusCode = 401
     res.json({message:'Failed to reset password. Check inputs'});
    }
-});
-
-app.post('/register', function(req, res){
-    var errorResult = validator.validateRegister(req.body.email, req.body.password, req.body.firstName, req.body.lastName, req.body.company)
-    if (errorResult == null){
-        getToken(req, res, function(token){
-            registerUser(req, res, token)
-        })
-    } else {
-        console.log(errorResult)
-        res.statusCode = 400
-        res.json({message: 'Failed to send register email. Check inputs'})
-    }
 });
 
 // confirm registration
