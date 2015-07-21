@@ -129,11 +129,23 @@ app.get('/reset', function(req, res) {
   res.render('reset')
 });
 
+// in case request comes from a proxy, we might need to add a base url prefix, like /sultans/
 getBasePath = function(req) {
+
+    var basePath = '/'
     if (req.headers['x-forwarded-for']  !== undefined) {
-        return '/sultans/'
+            basePath = req.headers['x-proxy-prefix'] || '/'
     }
-    return '/'
+
+    if (process.env.DEBUG !== undefined) {
+        for(var key in req.headers) {
+            var value = req.headers[key];
+            console.log("[DEBUG]    HEADERS " + key + " : " + value);
+        }
+        console.log("[DEBUG] basePath: " + basePath);
+    }
+
+    return basePath
 }
 
 app.post('/', function(req, res){
