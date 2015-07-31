@@ -30,6 +30,7 @@ app.set('view engine', 'html')
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(favicon(path.join(__dirname,'public','img','favicon.ico')));
 app.use(session({
+  name: 'sultans.sid',
   genid: function(req) {
     return uid(30);
   },
@@ -50,6 +51,7 @@ app.get('/info', function(req, res) {
 // login.html
 app.get('/', function(req, res) {
     var logout = req.query.logout
+    var confirmToken = req.query.confirm_token
     if (logout != null && logout == 'true'){
         req.session.destroy(function() {
             res.clearCookie('connect.sid', { path: '/' });
@@ -58,6 +60,38 @@ app.get('/', function(req, res) {
             res.cookie('source', req.query.source);
             res.render('login',{ errorMessage: "" });
         })
+    } else if (confirmToken != null) {
+         getToken(req, res, function(token) {
+                getUserById(req, res, token, confirmToken, function(userData){
+                    if (confirmToken == userData.id) {
+                        var updateOptions = {
+                            headers: {
+                             'Accept' : 'application/json',
+                             'Authorization' : 'Bearer ' + token,
+                             'Content-Type' : 'application/json',
+                             'If-Match': userData.meta.version}
+                         }
+                        var updateData = {
+                             'userName' : userData.userName,
+                             'active' : true,
+                             'name' : {
+                                'familyName': userData.name.familyName,
+                                 'givenName' : userData.name.givenName
+                              },
+                             'emails':[
+                              {
+                               'value': userData.emails[0].value
+                              }]
+                        }
+                     updateUserData(req, res, token, userData.id, updateData, updateOptions, function(updateResp){
+                        res.render('login',{ errorMessage: "confirmation successful" });
+                     })
+                    } else {
+                       res.statusCode = 401
+                       res.render('login',{ errorMessage: 'Cannot retrieve user by confirm token.' })
+                    }
+                });
+         });
     } else {
         res.cookie('source', req.query.source);
         res.render('login',{ errorMessage: "" });
@@ -91,10 +125,28 @@ app.get('/register', function(req, res) {
 });
 
 // reset.html
-app.get('/reset/:resetToken', function(req, res) {
+app.get('/reset', function(req, res) {
   res.render('reset')
 });
 
+// in case request comes from a proxy, we might need to add a base url prefix, like /sultans/
+getBasePath = function(req) {
+
+    var basePath = '/'
+    if (req.headers['x-forwarded-for']  !== undefined) {
+            basePath = req.headers['x-proxy-prefix'] || '/'
+    }
+
+    if (process.env.DEBUG !== undefined) {
+        for(var key in req.headers) {
+            var value = req.headers[key];
+            console.log("[DEBUG]    HEADERS " + key + " : " + value);
+        }
+        console.log("[DEBUG] basePath: " + basePath);
+    }
+
+    return basePath
+}
 
 app.post('/', function(req, res){
     var username = req.body.email
@@ -117,13 +169,13 @@ app.post('/', function(req, res){
             if (req.session.client_id == null) {
                 var sourceCookie = getCookie(req, 'source')
                 if (sourceCookie == null || sourceCookie == 'undefined'){
-                    res.redirect('dashboard')
+                    res.redirect(getBasePath(req) + 'dashboard')
                 } else {
                     var sourceUrl = new Buffer(sourceCookie, 'base64').toString('utf-8')
                     res.redirect(sourceUrl)
                 }
             } else {
-                res.redirect('confirm')
+                res.redirect(getBasePath(req) + 'confirm')
             }
         } else {
             res.render('login',{ errorMessage: "Incorrect email/password or account is disabled." });
@@ -142,9 +194,9 @@ app.get('/oauth/authorize', function(req, res){
         req.session.scope = req.param('scope')
         req.session.redirect_uri = req.param('redirect_uri')
         if (isUaaSession(req)) {
-            res.redirect('/confirm')
+            res.redirect(getBasePath(req) + 'confirm')
         } else {
-            res.redirect('/')
+            res.redirect(getBasePath(req))
         }
     } else {
         res.statusCode = 404
@@ -394,42 +446,6 @@ app.post('/register', function(req, res){
     }
 });
 
-// confirm registration
-app.get('/confirm/:confirm_token', function(req, res){
-   var confirmToken = req.param("confirm_token")
-   getToken(req, res, function(token) {
-        getUserById(req, res, token, confirmToken, function(userData){
-            if (confirmToken == userData.id) {
-                var updateOptions = {
-                     headers: {
-                       'Accept' : 'application/json',
-                       'Authorization' : 'Bearer ' + token,
-                       'Content-Type' : 'application/json',
-                       'If-Match': userData.meta.version}
-                    }
-                var updateData = {
-                       'userName' : userData.userName,
-                       'active' : true,
-                       'name' : {
-                         'familyName': userData.name.familyName,
-                         'givenName' : userData.name.givenName
-                        },
-                        'emails':[
-                        {
-                         'value': userData.emails[0].value
-                        }]
-                    }
-                updateUserData(req, res, token, userData.id, updateData, updateOptions, function(updateResp){
-                   res.render('login',{ errorMessage: "confirmation successful" });
-                })
-            } else {
-                res.statusCode = 401
-                res.json({message: 'Cannot retrieve user by confirm token.'})
-            }
-        });
-   });
-});
-
 app.post('/invite', function (req, res){
     var inviteEmail = req.body.invite_email
     if (validator.validateEmail(inviteEmail)){
@@ -459,7 +475,7 @@ app.post('/forget', function(req, res){
                var resetToken = md5(usrIdAndLastModified)
                var templateFile = path.join(__dirname,'templates','reset-password-email.jade')
                mailer.sendMail(req.body.email, 'Password reset' , templateFile, {user: userData.givenName,
-                  confirm: process.env.SL_ADDRESS + '/reset/' + resetToken + '?email=' + req.body.email})
+                  confirm: process.env.SL_ADDRESS + '/reset?reset_token=' + resetToken + '&email=' + req.body.email})
                res.json({message: 'SUCCESS'})
             });
         });
@@ -528,7 +544,7 @@ app.post('/account/register', function(req, res){
                             updatePassword(req, res, token, userData.id, req.body.password, function(pwdResp){
                                 var templateFile = path.join(__dirname,'templates','confirmation-email.jade')
                                 mailer.sendMail(req.body.email, 'Registration' , templateFile, {user: req.body.firstName,
-                                  confirm: process.env.SL_ADDRESS + '/confirm/' + userData.id})
+                                  confirm: process.env.SL_ADDRESS + '/?confirm_token=' + userData.id})
                                 res.json({message: 'SUCCESS'});
                             });
                         });
@@ -910,7 +926,7 @@ registerUser = function(req, res, token) {
                      console.log('User created with ' + createResp.body.id + '(id) and name: ' + req.body.email)
                      var templateFile = path.join(__dirname,'templates','confirmation-email.jade')
                      mailer.sendMail(req.body.email, 'Registration' , templateFile, {user: req.body.firstName,
-                         confirm: process.env.SL_ADDRESS + '/confirm/' + createResp.body.id})
+                         confirm: process.env.SL_ADDRESS + '/?confirm_token=' + createResp.body.id})
                      updateAndPostSequenceIqGroups(token, createResp.body.id, req.body.company)
                      updateCloudbreakGroups(token, createResp.body.id)
                      res.json({status: 200, message: 'SUCCESS'})
@@ -941,7 +957,7 @@ registerUser = function(req, res, token) {
                                     console.log('Resending registration email for ' + userData.id + '(id) and name: ' + req.body.email)
                                     var templateFile = path.join(__dirname,'templates','confirmation-email.jade')
                                     mailer.sendMail(req.body.email, 'Registration' , templateFile, {user: req.body.firstName,
-                                     confirm: process.env.SL_ADDRESS + '/confirm/' + userData.id })
+                                     confirm: process.env.SL_ADDRESS + '/?confirm_token=' + userData.id })
                                     res.json({status: 200, message: 'SUCCESS'})
                                 });
                              });
