@@ -109,6 +109,58 @@
                         </div>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2">
+
+                    <div class="panel panel-dark-transparent center-block">
+                        <div class="panel-heading">
+                            <h1 class="panel-title">Register</h1>
+                        </div>
+                        <div class="panel-body" ng-controller="registerController">
+                            <form role="form" action="/" method="POST" autocomplete="on" name="registerForm">
+                                <div class="form-group"
+                                     ng-class="{ 'has-error has-feedback': showRegisterEmailError && registerForm.email.$invalid }">
+                                    <!-- OPTIONAL HTML:
+                                    class: 'has-feedback' - got validation result AND
+                                    class: 'has-error' – error OR
+                                    class: 'has-success' - ok
+                                    -->
+                                    <label class="sr-only" for="invite_email">email</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
+                                        <input class="form-control" type="email" ng-model="invite_email"
+                                               ng-blur="showRegisterEmailError=true;" id="invite_email"
+                                               name="invite_email" placeholder="email"
+                                               required>
+                                        <i class="fa fa-warning form-control-feedback" ng-show="showRegisterEmailError && registerForm.email.$invalid"></i>
+                                    </div>
+                                    <!-- .input-group -->
+                                    <span class="help-block" ng-show="showRegisterEmailError && registerForm.email.$invalid">invalid email address</span>
+                                </div>
+                                <!-- .form-group -->
+                                <a href="" ng-click="registerUser()" ng-disabled="registerForm.$invalid"
+                                   id="register-login-btn" class="btn btn-info btn-block" role="button">
+                                    <i class="fa fa-sign-in fa-fw"></i> register</a>
+                            </form>
+                            <div class="modal fade" role="dialog" id="registerErrorDialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                                            <h4 class="" style="color: black;">{{message}}</h4>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div><!-- /.modal-content -->
+                                </div><!-- /.modal-dialog -->
+                            </div><!-- /.modal -->
+                            </div>
+                        </div>
+                </div>
+            </div>
         </div>
     </section>
     <div class="modal fade" role="dialog" id="msgDialog" ng-init="message='<%= errorMessage %>'">

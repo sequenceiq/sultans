@@ -103,3 +103,24 @@ regApp.directive('match', function($parse) {
     }
   };
 });
+
+regApp.controller("registerController", ['$scope', '$http', '$window',
+    function ($scope, $http, $window) {
+            $scope.registerUser = function() {
+                $http({method: 'POST',dataType: 'json',url:  "/invite",
+                       data: {invite_email: $scope.invite_email}
+                      }).success(function(responseData){
+                        if (responseData.message == 'SUCCESS'){
+                          $window.location.href = responseData.url;
+                        } else {
+                            $scope.message = responseData.message;
+                            console.log(responseData.message)
+                            $jq("#registerErrorDialog").modal('show');
+                        }
+                      }).error(function (data, status, headers, config){
+                            $scope.message = data.message;
+                            $jq("#registerErrorDialog").modal('show');
+                      });
+            }
+}
+]);

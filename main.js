@@ -402,22 +402,21 @@ app.get('/confirm/:confirm_token', function(req, res){
 });
 
 app.post('/invite', function (req, res){
-    var inviteEmail = req.body.invite_email
-    if (validator.validateEmail(inviteEmail)){
-        getUserName(req, res, function(adminUserName){
-           getToken(req, res, function(token){
-              getUserByName(req, res, token, adminUserName, 'id,userName,groups', function(userData){
-                isUserAdmin(req, res, userData, function(companyId){
-                   inviteUser(req, res, token, inviteEmail, adminUserName, companyId)
-                });
-              });
-            });
+  var inviteEmail = req.body.invite_email
+  if (validator.validateEmail(inviteEmail)){
+    var adminUserName = process.env.UAA_DEFAULT_USER_EMAIL;
+    getToken(req, res, function(token){
+      getUserByName(req, res, token, adminUserName, 'id,userName,groups', function(userData){
+        isUserAdmin(req, res, userData, function(companyId){
+           inviteUser(req, res, token, inviteEmail, adminUserName, companyId)
         });
-    }
-    else {
-        res.statusCode = 400
-        res.json({message: 'Email is not valid'})
-    }
+      });
+    });
+  }
+  else {
+      res.statusCode = 400
+      res.json({message: 'Email is not valid'})
+  }
 });
 
 app.post('/forget', function(req, res){
@@ -1015,19 +1014,13 @@ inviteUser = function(req, res, token, inviteEmail, adminUserName, companyId) {
            updateGroup(token, createResp.body.id, companyId)
            updateCloudbreakGroups(token, createResp.body.id)
 
-           var templateFile = path.join(__dirname,'templates','invite-email.jade')
-           mailer.sendMail(req.body.invite_email, 'Cloudbreak invite' , templateFile, {user: adminUserName,
-           invite: process.env.SL_ADDRESS + '/account/register?token=' + userTempToken + '&email=' + inviteEmail + '&inviter=' + adminUserName})
-           res.json({message: 'SUCCESS'})
+           res.json({message: 'SUCCESS', url: '/account/register?token=' + userTempToken + '&email=' + inviteEmail + '&inviter=' + adminUserName})
        } else if (createResp.statusCode == 409) {
             getUserByName(req, res, token, inviteEmail, 'givenName,active', function(userData) {
                 if (userData.active == false) { // TODO: check verified instead
                     var tempToken = userData.givenName;
                     console.log(tempToken)
-                    var templateFile = path.join(__dirname,'templates','invite-email.jade')
-                    mailer.sendMail(req.body.invite_email, 'Cloudbreak invite' , templateFile, {user: adminUserName,
-                    invite: process.env.SL_ADDRESS + '/account/register?token=' + tempToken + '&email=' + inviteEmail + '&inviter=' + adminUserName})
-                    res.json({message: 'SUCCESS'})
+                    res.json({message: 'SUCCESS', url: '/account/register?token=' + userTempToken + '&email=' + inviteEmail + '&inviter=' + adminUserName})
                 } else {
                     res.statusCode = 400
                     res.json({message: 'Registration registration failed. (invite)' + createResp.body.message})
