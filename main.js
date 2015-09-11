@@ -266,12 +266,14 @@ updateAndPostSequenceIqGroups = function (token, userId, company){
 }
 
 updateCloudbreakGroups = function (token, userId) {
-    updateGroup(token, userId, 'cloudbreak.templates')
+    updateGroup(token, userId, 'cloudbreak.templates.read')
+    updateGroup(token, userId, 'cloudbreak.blueprints.read')
+    updateGroup(token, userId, 'cloudbreak.recipes.read')
+    updateGroup(token, userId, 'cloudbreak.networks.read')
+    updateGroup(token, userId, 'cloudbreak.securitygroups.read')
     updateGroup(token, userId, 'cloudbreak.stacks')
-    updateGroup(token, userId, 'cloudbreak.blueprints')
     updateGroup(token, userId, 'cloudbreak.credentials')
     updateGroup(token, userId, 'cloudbreak.events')
-    updateGroup(token, userId, 'cloudbreak.recipes')
     updateGroup(token, userId, 'cloudbreak.usages.user')
     updateGroup(token, userId, 'periscope.cluster')
 }
@@ -519,7 +521,7 @@ app.post('/account/register', function(req, res){
 app.get('/account/details', function(req, res){
     getUserName(req, res, function(userName){
         getToken(req, res, function(token){
-            getUserByName(req, res, token, userName, 'userName,familyName,givenName,groups', function(userData){
+            getUserByName(req, res, token, userName, 'userName,familyName,givenName,groups,meta', function(userData){
                 var companyName = null
                 var groups = userData.groups
                 var adminUserId = null
@@ -539,10 +541,10 @@ app.get('/account/details', function(req, res){
                  }
                  needle.get(uaaAddress + '/Users/' + userData.id, usrOptions, function(err, adminUserData) {
                     if (adminUserData.statusCode == 200) {
-                       res.json({userName: userData.userName, givenName: userData.givenName, familyName: userData.familyName, company: companyName, companyOwner: adminUserData.userName})
+                       res.json({userName: userData.userName, givenName: userData.givenName, familyName: userData.familyName, company: companyName, companyOwner: adminUserData.userName, meta: userData.meta})
                     } else {
                         // workaround for default users
-                       res.json({userName: userData.userName, givenName: userData.givenName, familyName: userData.familyName, company: companyName, companyOwner: 'DEFAULT_USER'})
+                       res.json({userName: userData.userName, givenName: userData.givenName, familyName: userData.familyName, company: companyName, companyOwner: 'DEFAULT_USER', meta: userData.meta})
                     }
                  });
             });
