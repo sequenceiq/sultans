@@ -46,7 +46,7 @@
 <div ng-controller="loginController">
     <section>
         <div class="container">
-            <div class="row">
+            <div class="row" ng-show="!$root.registerFormEnabled">
                 <div class="col-sm-8 col-sm-offset-2">
 
                     <div class="panel panel-dark-transparent center-block">
@@ -54,7 +54,7 @@
                             <h1 class="panel-title">Login</h1>
                         </div>
                         <div class="panel-body">
-                                <form role="form" action="/" method="POST" autocomplete="on" name="loginForm" ng-controller="loginController">
+                                <form role="form" action="/" method="POST" autocomplete="on" name="loginForm">
                                     <div class="form-group"
                                          ng-class="{ 'has-error has-feedback': showLoginEmailError && loginForm.email.$invalid }">
                                         <!-- OPTIONAL HTML:
@@ -104,13 +104,16 @@
                                        ng-disabled="loginForm.email.$invalid"
                                        class="btn btn-info btn-block hidden" role="button"><i
                                             class='fa fa-paper-plane fa-fw'></i> reset email</a>
+                                    <a href="" id="show-register-btn" class="btn btn-info btn-block" role="button"
+                                    ng-click="$root.registerFormEnabled=!$root.registerFormEnabled">
+                                        <i class="fa fa fa-plus-square fa-fw"></i> register</a>
                                 </form>
                             </div>
                         </div>
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row" ng-show="$root.registerFormEnabled">
                 <div class="col-sm-8 col-sm-offset-2">
 
                     <div class="panel panel-dark-transparent center-block">
@@ -142,7 +145,10 @@
                                 <!-- .form-group -->
                                 <a href="" ng-click="registerUser()" ng-disabled="registerForm.$invalid"
                                    id="register-login-btn" class="btn btn-info btn-block" role="button">
-                                    <i class="fa fa-sign-in fa-fw"></i> register</a>
+                                    <i class="fa fa fa-plus-square fa-fw"></i> register</a>
+                                <a href="" id="show-login-btn" class="btn btn-info btn-block" role="button"
+                                    ng-click="$root.registerFormEnabled=!$root.registerFormEnabled">
+                                    <i class="fa fa-sign-in fa-fw"></i> sign in</a>
                             </form>
                             <div class="modal fade" role="dialog" id="registerErrorDialog">
                                 <div class="modal-dialog">
