@@ -179,7 +179,8 @@ app.get('/confirm', function(req, res){
               } else {
                     if (confirmResp.statusCode == 200){
                         req.session.userScopes = confirmResp.body.auth_request.scope
-                        res.render('confirm', {client_id : req.session.client_id})
+                        //res.render('confirm', {client_id : req.session.client_id})
+                        postConfirmation(req, res);
                     } else if (confirmResp.statusCode == 302){
                         if (endsWith(confirmResp.headers.location, '/login')){ // when redirects to UAA API login page
                           res.render('login',{ errorMessage: "" });
@@ -204,7 +205,11 @@ endsWith = function (str, suffix) {
 }
 
 app.post('/confirm', function(req, res){
-    var confirmOptions = {
+    postConfirmation(req, res);
+});
+
+postConfirmation = function(req, res) {
+  var confirmOptions = {
         headers: {
                'Accept' : 'text/html,application/xhtml+xml,application/xml',
                'Cookie' : 'JSESSIONID=' + req.session.uaa_sessionid,
@@ -233,7 +238,7 @@ app.post('/confirm', function(req, res){
                }
            }
     });
-});
+}
 
 postGroup = function(token, userId, displayName){
         var groupOptions = {
