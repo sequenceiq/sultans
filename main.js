@@ -64,10 +64,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/dashboard', function(req, res) {
-    res.render('dashboard',
-    {
-       cloudbreakAddress: process.env.SL_CB_ADDRESS
-    })
+    res.redirect(process.env.SL_CB_ADDRESS);
 });
 
 var emailErrorMsg = 'invalid email address'
