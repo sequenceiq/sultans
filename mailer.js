@@ -18,7 +18,11 @@ sendSimpleEmail = function(to, subject, content) {
     if (process.env.SL_SMTP_SENDER_USERNAME == null && process.env.SL_SMTP_SENDER_PASSWORD == null) {
       transport = nodemailer.createTransport(smtpTransport({
           host: process.env.SL_SMTP_SENDER_HOST,
-          port: process.env.SL_SMTP_SENDER_PORT
+          port: process.env.SL_SMTP_SENDER_PORT,
+          secure: false,
+          tls: {
+              rejectUnauthorized: false
+          }
       }));
     } else {
       transport = nodemailer.createTransport(smtpTransport({
@@ -27,6 +31,10 @@ sendSimpleEmail = function(to, subject, content) {
           auth: {
               user: process.env.SL_SMTP_SENDER_USERNAME,
               pass: process.env.SL_SMTP_SENDER_PASSWORD
+          },
+          secure: false,
+          tls: {
+              rejectUnauthorized: false
           }
       }));
     }
