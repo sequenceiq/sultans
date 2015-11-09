@@ -38,11 +38,6 @@ sendSimpleEmail = function(to, subject, content) {
          }
        }));
     }
-    if ( process.env.SL_SMTP_TLS_KEY_FILE_NAME != null && process.env.SL_SMTP_TLS_KEY_FILE_NAME != ""
-       && process.env.SL_SMTP_TLS_CERT_FILE_NAME != null && process.env.SL_SMTP_TLS_CERT_FILE_NAME != "") {
-      transport.tls.key=fs.readFileSync('/certs/trusted/' + process.env.SL_SMTP_TLS_KEY_FILE_NAME);
-      transport.tls.cert=fs.readFileSync('certs/trusted/' + process.env.SL_SMTP_TLS_CERT_FILE_NAME);
-    }
     console.log('sending mail to ' +  to);
     transport.sendMail({
         from: process.env.SL_SMTP_SENDER_FROM,
